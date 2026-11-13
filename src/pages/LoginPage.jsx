@@ -18,7 +18,7 @@ const LOCK_MS = 60_000;
 const safeDestination = (from) => (typeof from === 'string' && /^\/(?!\/)[\w\-/]*$/.test(from) && from !== '/entrar' ? from : null);
 
 export default function LoginPage() {
-  const { user, role, loading, signIn } = useAuth();
+  const { user, role, loading, signIn, configError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = safeDestination(location.state?.from);
@@ -49,6 +49,10 @@ export default function LoginPage() {
     setError('');
     setInfo('');
     if (locked) return;
+    if (configError) {
+      setError('O login está temporariamente indisponível por um problema de configuração do site.');
+      return;
+    }
     if (!isValidEmail(email) || password.length < 6) {
       setError('Informe um e-mail válido e sua senha.');
       return;
@@ -57,9 +61,19 @@ export default function LoginPage() {
     try {
       const session = await signIn(normalizeEmail(email), password);
       attempts.current = 0;
-      const { data } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-      navigate(from || (data?.role === 'admin' ? '/admin' : '/minha-conta'), { replace: true });
+      let nextRole = null;
+      try {
+        const { data } = await supabase.from('profiles').select('role').eq('id', session?.user?.id).maybeSingle();
+        nextRole = data?.role ?? null;
+      } catch {
+        // Sem o cargo, cai na área do aluno; o /admin revalida no servidor de qualquer forma.
+      }
+      navigate(from || (nextRole === 'admin' ? '/admin' : '/minha-conta'), { replace: true });
     } catch (err) {
+      if (err?.code === 'CONFIG') {
+        setError(err.message);
+        return;
+      }
       attempts.current += 1;
       if (attempts.current >= MAX_ATTEMPTS) {
         attempts.current = 0;
@@ -84,7 +98,11 @@ export default function LoginPage() {
       return;
     }
     setBusy(true);
-    await supabase.auth.resetPasswordForEmail(normalizeEmail(email), { redirectTo: `${window.location.origin}/redefinir-senha` }).catch(() => {});
+    try {
+      await supabase.auth.resetPasswordForEmail(normalizeEmail(email), { redirectTo: `${window.location.origin}/redefinir-senha` });
+    } catch {
+      // Resposta idêntica com ou sem erro: não revela se o e-mail existe.
+    }
     setBusy(false);
     setInfo('Se este e-mail estiver cadastrado, você receberá um link para redefinir a senha em instantes.');
     setMode('login');
@@ -106,6 +124,9 @@ export default function LoginPage() {
           </p>
 
           <div className="mt-6 space-y-4">
+            {configError ? (
+              <Alert tone="warn">O login está temporariamente indisponível por manutenção. Tente novamente em alguns minutos.</Alert>
+            ) : null}
             {error ? <Alert tone="error">{error}</Alert> : null}
             {info ? <Alert tone="ok">{info}</Alert> : null}
             {locked ? <Alert tone="warn">Muitas tentativas. Aguarde {Math.ceil((lockedUntil - now) / 1000)} s para tentar de novo.</Alert> : null}

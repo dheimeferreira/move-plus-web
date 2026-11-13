@@ -48,6 +48,29 @@ export async function fetchDashboard() {
 }
 
 // -----------------------------------------------------------------------------
+// Custos de IA (public.ai_usage_logs, gravada pelas Edge Functions)
+// -----------------------------------------------------------------------------
+export const AI_COST_PERIODS = Object.freeze([
+  { key: '7', label: '7 dias', days: 7 },
+  { key: '30', label: '30 dias', days: 30 },
+  { key: '90', label: '90 dias', days: 90 },
+  { key: 'all', label: 'Tudo', days: null },
+]);
+
+export async function fetchAiCosts({ period = '30', limit = 50 } = {}) {
+  const found = AI_COST_PERIODS.find((p) => p.key === period) || AI_COST_PERIODS[1];
+  const data = await rpc('admin_ai_costs_summary', { p_days: found.days, p_limit: Math.min(Math.max(Number(limit) || 50, 1), 200) });
+  return {
+    totals: data?.totals || {},
+    allTime: data?.all_time || {},
+    byFeature: data?.by_feature || [],
+    byModel: data?.by_model || [],
+    daily: data?.daily || [],
+    topUsers: data?.top_users || [],
+  };
+}
+
+// -----------------------------------------------------------------------------
 // Usuários
 // -----------------------------------------------------------------------------
 export async function listUsers({ search = '', status = 'all', offset = 0, limit = PAGE_SIZE } = {}) {

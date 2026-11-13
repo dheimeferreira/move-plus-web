@@ -18,6 +18,7 @@ const AdminUsers = lazy(() => import('./pages/admin/UsersPage'));
 const AdminExercises = lazy(() => import('./pages/admin/ExercisesPage'));
 const AdminStore = lazy(() => import('./pages/admin/StorePage'));
 const AdminDeletions = lazy(() => import('./pages/admin/DeletionRequestsPage'));
+const AdminAiCosts = lazy(() => import('./pages/admin/AiCostsPage'));
 
 const TITLES = {
   '/': 'MOVE+ | Treino com IA, corrida com GPS e nutrição inteligente',
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="exercicios" element={<AdminExercises />} />
             <Route path="loja" element={<AdminStore />} />
             <Route path="exclusoes" element={<AdminDeletions />} />
+            <Route path="custos-ia" element={<AdminAiCosts />} />
           </Route>
         </Routes>
       </Suspense>

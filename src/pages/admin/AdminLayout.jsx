@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Outlet } from 'react-router';
-import { Dumbbell, LayoutDashboard, LogOut, ShoppingBag, UserX, Users, ExternalLink } from 'lucide-react';
+import { Coins, Dumbbell, LayoutDashboard, LogOut, ShoppingBag, UserX, Users, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Logo } from '../../components/ui/Brand';
 import { NavItem } from '../../components/layout/PublicLayout';
@@ -11,6 +11,7 @@ const NAV = [
   { to: '/admin/usuarios', icon: Users, label: 'Usuários & Equipe' },
   { to: '/admin/exercicios', icon: Dumbbell, label: 'Exercícios' },
   { to: '/admin/loja', icon: ShoppingBag, label: 'Loja MOVE+' },
+  { to: '/admin/custos-ia', icon: Coins, label: 'Custos IA' },
   { to: '/admin/exclusoes', icon: UserX, label: 'Exclusões LGPD' },
 ];
 

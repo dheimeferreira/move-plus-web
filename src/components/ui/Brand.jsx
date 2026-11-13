@@ -1,19 +1,19 @@
 import { Link } from 'react-router';
 import { SITE } from '../../config/site';
 
-export function LogoMark({ className = 'h-8 w-8' }) {
+/** Logo oficial do MOVE+ (mesmo arquivo do app: move-plus/assets/logo_move_plus.png, otimizado em 2x). */
+export const LOGO_SRC = '/brand/logo-move-plus.png';
+
+export function LogoMark({ className = 'h-9 w-auto' }) {
   return (
-    <svg viewBox="0 0 64 64" className={className} aria-hidden="true">
-      <rect x="1" y="1" width="62" height="62" rx="14" fill="#18181B" stroke="#27272A" strokeWidth="2" />
-      <path d="M14 46V18h7l11 15 11-15h7v28h-7V30l-11 14-11-14v16z" fill="#FAFAFA" />
-      <path d="M47 8h5v6h6v5h-6v6h-5v-6h-6v-5h6z" fill="#FF6B00" />
-    </svg>
+    <img src={LOGO_SRC} alt="" aria-hidden="true" width="266" height="192" decoding="async"
+      className={`shrink-0 select-none object-contain ${className}`} draggable="false" />
   );
 }
 
-export function Logo({ to = '/', suffix }) {
+export function Logo({ to = '/', suffix, className = '' }) {
   return (
-    <Link to={to} className="flex items-center gap-2.5" aria-label="MOVE+ — página inicial">
+    <Link to={to} className={`flex items-center gap-2.5 ${className}`} aria-label="MOVE+ — página inicial">
       <LogoMark />
       <span className="display text-2xl font-extrabold leading-none tracking-tight">
         MOVE<span className="text-brand">+</span>
