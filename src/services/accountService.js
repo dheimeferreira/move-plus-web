@@ -19,6 +19,13 @@ export async function fetchOwnStats() {
   return data;
 }
 
+/** Plano VIP do usuário (RPC my_entitlement: role, assinatura da Google Play ou trial de 7 dias). */
+export async function fetchEntitlement() {
+  const { data, error } = await supabase.rpc('my_entitlement');
+  if (error) return null; // banco sem a migração 2026-11-13: a página usa o role
+  return data;
+}
+
 export async function fetchActivePlan(userId) {
   const { data, error } = await supabase
     .from('user_ai_custom_workouts')

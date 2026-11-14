@@ -5,7 +5,6 @@ export const SITE = Object.freeze({
   androidPackage: 'com.movepluss.app',
   playStoreUrl: 'https://play.google.com/store/apps/details?id=com.movepluss.app',
   contactEmail: import.meta.env.VITE_CONTACT_EMAIL || '',
-  vipPrice: 'R$ 89,90',
   deletionDeadlineDays: 30,
   policyUpdatedAt: '12 de novembro de 2026',
 });

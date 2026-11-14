@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { PlayButton } from '../components/ui/Brand';
 import { Badge } from '../components/ui/Badge';
 import { SITE } from '../config/site';
+import { PLANS, TRIAL_DAYS } from '../config/plans';
 import { fetchActiveProducts } from '../services/accountService';
 import { publicStorageUrl } from '../lib/supabase';
 import { formatBRL } from '../lib/format';
@@ -278,25 +279,39 @@ export default function LandingPage() {
       {/* PLANOS */}
       <section id="planos" className="scroll-mt-20 border-t border-line py-20 sm:py-28">
         <div className="container-page">
-          <SectionHeading center eyebrow="Planos" title={<>Comece grátis. Evolua com o <span className="text-brand">VIP</span>.</>}>
-            Sem fidelidade: o plano VIP pode ser cancelado a qualquer momento.
+          <SectionHeading center eyebrow="Planos" title={<><span className="text-brand">{TRIAL_DAYS} dias grátis</span> de VIP completo.</>}>
+            Todo novo cadastro começa com acesso VIP liberado. Depois, escolha um plano ou continue no gratuito, sem cobrança automática. Sem fidelidade.
           </SectionHeading>
 
-          <div className="mx-auto mt-14 grid max-w-4xl gap-4 md:grid-cols-2">
-            <div className="surface p-8">
+          <div className="mx-auto mt-14 grid max-w-5xl gap-4 md:grid-cols-3">
+            <div className="surface flex flex-col p-8">
               <p className="text-sm font-semibold text-muted">Gratuito</p>
               <p className="display mt-2 text-5xl font-extrabold">R$ 0</p>
               <p className="mt-1 text-sm text-subtle">Para começar a se mover hoje.</p>
               <Button href={SITE.playStoreUrl} variant="secondary" className="mt-6 w-full">Baixar grátis</Button>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-brand/60 bg-gradient-to-b from-brand/15 to-card p-8 shadow-[0_0_60px_-20px_rgba(255,107,0,0.5)]">
-              <Badge tone="brand" className="absolute right-6 top-6">Mais completo</Badge>
-              <p className="text-sm font-semibold text-brand">VIP PRO</p>
-              <p className="display mt-2 text-5xl font-extrabold">{SITE.vipPrice}<span className="text-lg text-muted">/mês</span></p>
-              <p className="mt-1 text-sm text-subtle">ZORYX AI completa, sem limites.</p>
-              <Button href={SITE.playStoreUrl} className="mt-6 w-full">Assinar no app</Button>
-            </div>
+            {PLANS.map((plan) =>
+              plan.highlight ? (
+                <div key={plan.id} className="relative flex flex-col overflow-hidden rounded-2xl border border-brand/60 bg-gradient-to-b from-brand/15 to-card p-8 shadow-[0_0_60px_-20px_rgba(249,115,22,0.5)]">
+                  <Badge tone="brand" className="absolute right-6 top-6">Economize {plan.savingsPercent}%</Badge>
+                  <p className="text-sm font-semibold text-brand">VIP {plan.title}</p>
+                  <p className="display mt-2 text-5xl font-extrabold">{formatBRL(plan.priceCents)}<span className="text-lg text-muted">/{plan.period}</span></p>
+                  <p className="mt-1 text-sm text-subtle">Equivale a <strong className="text-fg">{formatBRL(plan.monthlyEquivalentCents)}/mês</strong>.</p>
+                  <Button href={SITE.playStoreUrl} className="mt-6 w-full">Começar {TRIAL_DAYS} dias grátis</Button>
+                </div>
+              ) : (
+                <div key={plan.id} className="surface flex flex-col p-8">
+                  <p className="text-sm font-semibold text-muted">VIP {plan.title}</p>
+                  <p className="display mt-2 text-5xl font-extrabold">{formatBRL(plan.priceCents)}<span className="text-lg text-muted">/{plan.period}</span></p>
+                  <p className="mt-1 text-sm text-subtle">Flexível: cancele quando quiser.</p>
+                  <Button href={SITE.playStoreUrl} variant="secondary" className="mt-6 w-full">Começar {TRIAL_DAYS} dias grátis</Button>
+                </div>
+              ),
+            )}
           </div>
+          <p className="mx-auto mt-4 max-w-3xl text-center text-xs text-subtle">
+            Assinaturas cobradas pela Google Play dentro do app, com renovação automática. Cancele a qualquer momento em Play Store › Pagamentos e assinaturas.
+          </p>
 
           <div className="surface mx-auto mt-6 max-w-4xl overflow-x-auto">
             <table className="w-full min-w-[520px] text-sm">

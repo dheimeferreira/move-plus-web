@@ -8,11 +8,12 @@ import { Logo, EmptyState, PlayButton } from '../components/ui/Brand';
 import { Button } from '../components/ui/Button';
 import { Badge, RoleBadge } from '../components/ui/Badge';
 import { InlineLoader } from '../components/ui/Spinner';
-import { fetchActivePlan, fetchActiveProducts, fetchOwnStats, fetchRecentSessions } from '../services/accountService';
+import { fetchActivePlan, fetchActiveProducts, fetchEntitlement, fetchOwnStats, fetchRecentSessions } from '../services/accountService';
 import { formatBRL, formatDate, formatDateTime, formatNumber, initials } from '../lib/format';
 import { publicStorageUrl } from '../lib/supabase';
 import { categoryLabel } from '../lib/validation';
-import { SITE, VIP_ROLES } from '../config/site';
+import { VIP_ROLES } from '../config/site';
+import { PLANS, TRIAL_DAYS, entitlementLabel } from '../config/plans';
 
 const GOAL_LABEL = { emagrecimento: 'Emagrecimento', hipertrofia: 'Hipertrofia', definicao: 'Definição', condicionamento: 'Condicionamento' };
 
@@ -45,13 +46,13 @@ function Stat({ icon: Icon, label, value, suffix }) {
 
 export default function AccountPage() {
   const { user, profile, role, signOut } = useAuth();
-  const [data, setData] = useState({ loading: true, stats: null, plan: null, sessions: [], products: [] });
+  const [data, setData] = useState({ loading: true, stats: null, plan: null, sessions: [], products: [], entitlement: null });
 
   useEffect(() => {
     if (!user) return undefined;
     let active = true;
-    Promise.all([fetchOwnStats(), fetchActivePlan(user.id), fetchRecentSessions(user.id), fetchActiveProducts(4)]).then(
-      ([stats, plan, sessions, products]) => active && setData({ loading: false, stats, plan, sessions, products }),
+    Promise.all([fetchOwnStats(), fetchActivePlan(user.id), fetchRecentSessions(user.id), fetchActiveProducts(4), fetchEntitlement()]).then(
+      ([stats, plan, sessions, products, entitlement]) => active && setData({ loading: false, stats, plan, sessions, products, entitlement }),
     );
     return () => {
       active = false;
@@ -59,7 +60,10 @@ export default function AccountPage() {
   }, [user]);
 
   const name = profile?.full_name || user?.email?.split('@')[0] || 'Atleta';
-  const isVip = VIP_ROLES.includes(role);
+  // Com a RPC my_entitlement, o trial de 7 dias e a assinatura da Google Play contam como VIP.
+  const isVip = data.entitlement ? data.entitlement.is_vip === true : VIP_ROLES.includes(role);
+  const inTrial = data.entitlement?.source === 'trial';
+  const yearly = PLANS[0];
   const { stats } = data;
 
   return (
@@ -100,10 +104,14 @@ export default function AccountPage() {
             <div className={`rounded-2xl border p-4 sm:w-72 ${isVip ? 'border-brand/50 bg-brand/10' : 'border-line bg-ink'}`}>
               <div className="flex items-center gap-2">
                 <Crown className={`h-5 w-5 ${isVip ? 'text-brand' : 'text-subtle'}`} aria-hidden="true" />
-                <p className="font-semibold">{isVip ? 'Plano VIP ativo' : 'Plano Gratuito'}</p>
+                <p className="font-semibold">{entitlementLabel(data.entitlement, role)}</p>
               </div>
               <p className="mt-1 text-xs text-muted">
-                {isVip ? 'Acesso completo à ZORYX AI e aos protocolos adaptativos.' : `Desbloqueie a ZORYX AI completa por ${SITE.vipPrice}/mês no app.`}
+                {inTrial
+                  ? `Acesso VIP completo durante o teste de ${TRIAL_DAYS} dias. Assine no app para continuar: Anual ${formatBRL(yearly.priceCents)} ou Mensal ${formatBRL(PLANS[1].priceCents)}.`
+                  : isVip
+                    ? 'Acesso completo à ZORYX AI e aos protocolos adaptativos.'
+                    : `Desbloqueie a ZORYX AI completa no app: ${formatBRL(yearly.monthlyEquivalentCents)}/mês no plano Anual.`}
               </p>
             </div>
           </div>
